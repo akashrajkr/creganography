@@ -8,14 +8,29 @@ from Crypto.Util.Padding import pad,unpad
 import cv2
 import numpy as np
 from tqdm import tqdm
+import os
 
 # constants
-hiddenImageFile = 'baby.jpg'
-coverImageFile = 'cover.jpg'
+hiddenImageFile = input('Enter file path of the file to be hidden: ')
+coverImageFile = input('Enter the path to cover image: ')
 output = 'output/stego.png'
 
 print('Reading files...')
+
+# Hidden image
 img = cv2.imread(hiddenImageFile)
+if img is None:
+    print('File to be hidden not found in the path given directory.')
+    exit(-1)
+# Cover image
+cimg = cv2.imread(coverImageFile)
+if cimg is None:
+    print('Cover image file is not found in the given directory.')
+    exit(-1)
+
+cn, cm, cch = cimg.shape
+flattenedCList = np.ndarray.flatten(cimg)
+
 n,m,ch = img.shape
 binaryImageSize = '{0:016b}'.format(n)+'{0:016b}'.format(m)
 
@@ -23,20 +38,19 @@ print('Encrypting file data...')
 flattenedList = np.ndarray.flatten(img)
 data = b64encode(bytes(flattenedList))
 
-password = 'hackerman'
+password = input('Enter password: ')
 sha = bytes(hashlib.sha256(bytes(password.encode())).digest())
 iv = b'This is an IV456'
-cipher = AES.new(sha,AES.MODE_CBC,iv)
-ct = cipher.encrypt(pad(data, AES.block_size))
+try:
+    cipher = AES.new(sha,AES.MODE_CBC,iv)
+    ct = cipher.encrypt(pad(data, AES.block_size))
+except ValueError:
+    print('Value error exception! Unable to encrypt.')
 encryptedList = list(ct)
 
 # cipher2 = AES.new(sha, AES.MODE_CBC, iv)
 # dct = unpad(cipher2.decrypt(ct), AES.block_size)
 # dList = list(b64decode(dct))
-
-cimg = cv2.imread(coverImageFile)
-cn, cm, cch = cimg.shape
-flattenedCList = np.ndarray.flatten(cimg)
 
 print('Writing encrypted data into cover...')
 # storing sizes
@@ -69,5 +83,15 @@ pbar.close()
 print('Writing into output file...')
 # reshaping and saving
 CList = flattenedCList.reshape(cimg.shape)
-cv2.imwrite(output,CList)
-print('Stego-Image written to file '+output)
+try:    
+    if not os.path.exists('output'):
+        try:
+            os.mkdir('output')
+        except OSError as error:
+            print(error)
+            exit(-1)
+    cv2.imwrite(output,CList)
+    print('Successfully saved the stego image in \'output\' directory.')
+except:
+    print('Writing operation failed!')
+    exit(-1)
