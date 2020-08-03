@@ -9,6 +9,7 @@ from Crypto.Util.Padding import pad,unpad
 import cv2
 import numpy as np
 from tqdm import tqdm
+from getpass import getpass
 
 # constants
 stegoImageFile = 'output/stego.png'
@@ -54,7 +55,7 @@ pbar.close()
 print('Decrypting data...')
 while True:
     try:
-        password = input("Enter password: ")
+        password = getpass()
         sha = bytes(hashlib.sha256(bytes(password.encode())).digest())
         iv = b'This is an IV456'
         cipher = AES.new(sha, AES.MODE_CBC, iv)

@@ -8,6 +8,7 @@ from Crypto.Util.Padding import pad,unpad
 import cv2
 import numpy as np
 from tqdm import tqdm
+from getpass import getpass
 import os
 
 # constants
@@ -38,7 +39,7 @@ print('Encrypting file data...')
 flattenedList = np.ndarray.flatten(img)
 data = b64encode(bytes(flattenedList))
 
-password = input('Enter password: ')
+password = getpass()
 sha = bytes(hashlib.sha256(bytes(password.encode())).digest())
 iv = b'This is an IV456'
 try:
